@@ -1,0 +1,22 @@
+body {
+    background-color: rgb(221, 199, 169);
+}
+
+.navbar-brand {
+    display: flex;
+    align-items: center; 
+
+}
+
+a {
+    color: black;
+    align-items: center ;
+}
+
+.nome-proj-header {
+    align-items: center;
+    font-size: 22px;
+    font-weight: bold;
+    margin: 30px;
+}
+
