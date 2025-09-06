@@ -41,8 +41,11 @@
                         $_SESSION["msg"] = "Login realizado com sucesso";
                         $_SESSION["usuário_id"] = $user["id"];
                         $_SESSION["usuário_tipo"] = $user["tipo"];
-                        header("location: $BASE_URL/sucesso.php");
-                        exit;
+                        if($user["tipo"] === 'aluno'){
+                            header("location: $BASE_URL/entrada_aluno.php");
+                        } else ($user["tipo"] === 'professor'){
+                            header("location: $BASE_URL/entrada_professor.php");
+                        }
                     } else {
                         $_SESSION["msg"] = "Senha incorreta";
                         header("location: $BASE_URL/index.php");
