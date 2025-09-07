@@ -1,5 +1,6 @@
 <?php
     include_once("templates/header.php");
+    session_start();
 ?>
 
 <div>

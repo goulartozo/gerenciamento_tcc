@@ -1,15 +1,16 @@
 <?php
     include_once ("templates/header.php");
+    session_start();
 
-    if (!isset($_SESSION['user_id'])) {
-      header("Location: login.php");
-      exit;
-}
+    if (!isset($_SESSION["usuario_id"])) {
+        header("Location: index.php");
+        exit;
+    }
 
-    if ($_SESSION['user_tipo'] !== 'aluno') {
+    if ($_SESSION['usuario_tipo'] !== 'aluno') {
       header("Location: acesso_negado.php");
       exit;
-}
+    }
 ?>
 
 <div class="row row-cols-1 row-cols-md-3 g-4">

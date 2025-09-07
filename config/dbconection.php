@@ -1,7 +1,7 @@
 <?php
     
 $host = "localhost";
-$dbname = "cadastro";
+$dbname = "tcc_project";
 $user = "postgres";
 $pass = "postgres";
 $port = "5432";

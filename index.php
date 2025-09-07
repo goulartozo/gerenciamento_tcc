@@ -2,7 +2,6 @@
 include_once("templates/header.php");
 session_start();
 
-
 ?>
 <?php if (isset($_SESSION["msg"])): ?>
     <div class="alert alert-info">
@@ -12,7 +11,7 @@ session_start();
 <?php endif; ?>
 
 <div class="container mt-5">
-    <form action="<?= $BASE_URL ?>config/process.php" method="POST">
+    <form action="<?= $BASE_URL ?>/config/process.php" method="POST">
         <input type="hidden" name="type" value="login">
         <h1 class="text-center">Login</h1>
         <div class="form-check">
@@ -29,7 +28,7 @@ session_start();
         </div>
         <div class="mb-3">
             <label for="password" class="form-label">Senha</label>
-            <input type="password" class="form-control" id="password" name="password" required>
+            <input type="password" class="form-control" id="password" name="senha" required>
         </div>
         <button type="submit" class="btn btn-primary">Login</button>
         <div class="mt-3">
