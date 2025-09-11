@@ -101,6 +101,7 @@ function uploadEntrega($conn, $data, $BASE_URL) {
 if (!empty($data)) {
     $acao = $data["acao"] ?? "";
     $type = $data["type"] ?? "";
+    $acao = $data["acao"] ?? "";
 
     if ($type === "login") {
         login($conn, $data, $BASE_URL);
@@ -108,6 +109,60 @@ if (!empty($data)) {
 
     if ($acao === "upload") {
         uploadEntrega($conn, $data, $BASE_URL);
+    }
+    
+    if ($acao === "reuniao"){
+        registrar_reuniao($conn, $data, $BASE_URL);
+    }
+}
+
+function registrar_reuniao($conn, $data, $BASE_URL){
+    $aluno_id = $_SESSION['usuario_id'];
+    $datareuniao = $data['data'];
+    $assunto = $data['assunto'];
+    $prof = $data['prof'] ?: '✔';  
+    $aluno = $data['aluno'] ?: '✔';
+
+    $sql_prof = "SELECT professor_id FROM usuarios WHERE id = :aluno_id";
+    $stmt = $conn->prepare($sql_prof);
+    $stmt->bindParam(':aluno_id', $aluno_id);
+    $stmt->execute();
+    $professor = $stmt->fetch(PDO::FETCH_ASSOC);
+    $professor_id = $professor['professor_id'];
+
+    // Adicione prof e aluno ao SQL se existirem na tabela
+    $sql = "INSERT INTO reunioes(aluno_id, professor_id, data, assunto, ass_prof, ass_aluno)
+        VALUES (:aluno_id, :professor_id, :datareuniao, :assunto, :prof, :aluno);";
+
+    try {
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(':aluno_id', $aluno_id);
+        $stmt->bindParam(':professor_id', $professor_id);
+        $stmt->bindParam(':datareuniao', $datareuniao);
+        $stmt->bindParam(':assunto', $assunto);
+        $stmt->bindParam(':prof', $prof);
+        $stmt->bindParam(':aluno', $aluno);
+        $stmt->execute();
+        $_SESSION["msg"] = "Reunião registrada com sucesso!";
+    } catch (PDOException $e) {
+        $_SESSION["msg"] = "Erro ao registrar reunião: " . $e->getMessage();
+    }
+    header("Location: $BASE_URL/entrada_aluno.php");
+    exit;
+}
+
+function getReunioesAluno($conn) {
+    $aluno_id = $_SESSION['usuario_id'] ?? null;
+    if (!$aluno_id) return [];
+
+    try {
+        $sql = "SELECT data, assunto, ass_prof, ass_aluno FROM reunioes WHERE aluno_id = :aluno_id ORDER BY data DESC";
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(':aluno_id', $aluno_id);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        return [];
     }
 }
 
@@ -155,3 +210,4 @@ function getTarefasEntregasAluno($conn) {
         return [];
     }
 }
+

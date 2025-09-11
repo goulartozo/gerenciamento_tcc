@@ -1,7 +1,5 @@
 <?php
 include_once("templates/header.php");
-session_start();
-
 ?>
 <?php if (isset($_SESSION["msg"])): ?>
     <div class="alert alert-info">
