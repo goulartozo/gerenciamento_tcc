@@ -166,6 +166,19 @@ function getReunioesAluno($conn) {
     }
 }
 
+function getAlunosProfessores($conn) {
+    try{
+        $sql = "select * from usuarios";
+
+        $stmt = $conn->prepare($sql);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch(PDOException $e) {
+
+        return [];
+    }
+}
+
 function getEnviosStatus($status){
     $properties = ['disabled' => false, 'button_text' => 'ENVIAR'];
 

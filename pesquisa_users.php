@@ -1,12 +1,9 @@
 <?php
 include_once("templates/header.php");
-
+include_once("config/dbconection.php");
+include_once("config/process.php");
 // Exemplo de alunos no banco (simulação)
-$alunos = [
-    ["id" => 1, "nome" => "Maria Silva", "email" => "maria@email.com"],
-    ["id" => 2, "nome" => "João Souza", "email" => "joao@email.com"],
-    ["id" => 3, "nome" => "Ana Costa", "email" => "ana@email.com"],
-];
+$usuarios = getAlunosProfessores($conn)
 ?>
 
 <div class="container my-5">
@@ -29,7 +26,7 @@ $alunos = [
 
                 <!-- Botões de ação -->
                 <div class="col-md-6 text-end">
-                    <a href="cadastrar.php" class="btn btn-success">Cadastrar</a>
+                    <a href="cadastro_aluno_professor.php" class="btn btn-success">Cadastrar</a>
                     <button class="btn btn-primary" id="editarBtn" disabled>Editar</button>
                     <button class="btn btn-danger" id="excluirBtn" disabled>Excluir</button>
                 </div>
@@ -46,13 +43,13 @@ $alunos = [
                         </tr>
                     </thead>
                     <tbody>
-                        <?php foreach ($alunos as $aluno): ?>
+                        <?php foreach ($usuarios as $usuario): ?>
                             <tr>
                                 <td>
                                     <input type="radio" name="selectAluno" value="<?= $aluno['id'] ?>">
                                 </td>
-                                <td><?= $aluno['nome'] ?></td>
-                                <td><?= $aluno['email'] ?></td>
+                                <td><?= $usuario['nome'] ?></td>
+                                <td><?= $usuario['email'] ?></td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>
