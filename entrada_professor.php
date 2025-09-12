@@ -1,15 +1,15 @@
 <?php
-    include_once ("templates/header.php");
+include_once("templates/header.php");
 
-    if (!isset($_SESSION["usuario_id"])) {
-        header("Location: index.php");
-        exit;
-    }
+if (!isset($_SESSION["usuario_id"])) {
+  header("Location: index.php");
+  exit;
+}
 
-    if ($_SESSION['usuario_tipo'] !== 'professor') {
-      header("Location: acesso_negado.php");
-      exit;
-    }
+if ($_SESSION['usuario_tipo'] !== 'professor') {
+  header("Location: acesso_negado.php");
+  exit;
+}
 ?>
 
 <div class="row row-cols-1 row-cols-md-3 g-4">
@@ -38,6 +38,17 @@
         <h5 class="card-title">Notificações</h5>
         <p class="card-text">This is a longer card with supporting text below as a natural lead-in to additional content.</p>
       </div>
+    </div>
+  </div>
+  <div class="col">
+    <div class="card">
+      <a href="listagem_alunos_do_professor.php" class="card h-100">
+        <img src="./img/alunos_img.jpg" class="card-img-top" alt="Notificações">
+        <div class="card-body">
+          <h5 class="card-title">Meus alunos</h5>
+          <p class="card-text">Neste card você terá acesso a todos os alunos vinculados a você.</p>
+        </div>
+      </a>
     </div>
   </div>
 

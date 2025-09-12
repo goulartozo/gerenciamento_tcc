@@ -166,6 +166,24 @@ function getReunioesAluno($conn) {
     }
 }
 
+function getAlunosVinculadosAoProfessor($conn){
+    $professor_id = $_SESSION['usuario_id'] ?? null;
+    if (!$professor_id) return [];
+    
+    try{
+
+        $sql = "select * from usuarios where professor_id = :professor_id and tipo = 'aluno'";
+
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(':professor_id', $professor_id);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch(PDOException $e) {
+
+        return [];
+    }
+}
+
 function getAlunosProfessores($conn) {
     try{
         $sql = "select * from usuarios";
