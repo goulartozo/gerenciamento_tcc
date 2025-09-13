@@ -6,7 +6,7 @@
         exit;
     }
 
-    if ($_SESSION['usuario_tipo'] !== 'aluno') {
+    if ($_SESSION['tipo'] !== 'aluno') {
       header("Location: acesso_negado.php");
       exit;
     }

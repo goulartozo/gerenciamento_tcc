@@ -42,7 +42,7 @@ if ($_SESSION['usuario_tipo'] !== 'professor') {
   </div>
   <div class="col">
     <div class="card">
-      <a href="listagem_alunos_do_professor.php" class="card h-100">
+      <a href="entregas.php" class="card h-100">
         <img src="./img/alunos_img.jpg" class="card-img-top" alt="Notificações">
         <div class="card-body">
           <h5 class="card-title">Meus alunos</h5>

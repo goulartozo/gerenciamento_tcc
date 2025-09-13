@@ -9,7 +9,6 @@ include_once("url.php");
 
 $data = $_POST;
 
-// === FUNÇÕES ===
 function login($conn, $data, $BASE_URL) {
     $email = $data["email"];
     $pass  = $data["senha"];
@@ -27,7 +26,7 @@ function login($conn, $data, $BASE_URL) {
             if ($pass === $user["senha"]) {
                 $_SESSION["msg"] = "Login realizado com sucesso";
                 $_SESSION["usuario_id"] = $user["id"];
-                $_SESSION["usuario_tipo"] = $user["tipo"];
+                $_SESSION["tipo"] = $user["tipo"];
 
                 if ($user["tipo"] === 'aluno') {
                     header("Location: $BASE_URL/entrada_aluno.php");
@@ -172,12 +171,34 @@ function getAlunosVinculadosAoProfessor($conn){
     
     try{
 
-        $sql = "select * from usuarios where professor_id = :professor_id and tipo = 'aluno'";
+       // $sql = "select * from usuarios where professor_id = :professor_id and tipo = 'aluno'";
+
+        $sql = "
+            SELECT 
+                u.id,
+                u.nome,
+                u.matricula,
+                CASE 
+                    WHEN EXISTS (
+                        SELECT 1 FROM entregas e 
+                        WHERE e.aluno_id = u.id 
+                          AND e.status = 'enviado'
+                    )
+                    THEN 'enviado'
+                    ELSE 'não enviado'
+                END AS status
+            FROM usuarios u
+            WHERE u.professor_id = :professor_id
+              AND u.tipo = 'aluno'
+        ";
+
 
         $stmt = $conn->prepare($sql);
         $stmt->bindParam(':professor_id', $professor_id);
         $stmt->execute();
+
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+
     } catch(PDOException $e) {
 
         return [];
@@ -214,15 +235,17 @@ function getEnviosStatus($status){
     return $properties;
 }
 
-function getTarefasEntregasAluno($conn) {
-    $alunoId = $_SESSION["usuario_id"] ?? null;
+function getTarefasEntregasAluno($conn, $alunoId = null) {
+    if (!$alunoId) {
+        $alunoId = $_SESSION["usuario_id"] ?? null;
+    }
 
     if (!$alunoId) {
         return [];
     }
 
     try {
-        $query = "SELECT tarefa_id, status, nota FROM entregas WHERE aluno_id = :aluno_id";
+        $query = "SELECT tarefa_id, status, nota, arquivo FROM entregas WHERE aluno_id = :aluno_id";
         $stmt = $conn->prepare($query);
         $stmt->bindParam(":aluno_id", $alunoId);
         $stmt->execute();
@@ -233,7 +256,8 @@ function getTarefasEntregasAluno($conn) {
         foreach ($results as $row) {
             $entregasDoAluno[$row['tarefa_id']] = [
                 'status' => $row['status'],
-                'nota'   => $row['nota']
+                'nota'   => $row['nota'],
+                'arquivo' => $row['arquivo']
             ];
         }
         return $entregasDoAluno;

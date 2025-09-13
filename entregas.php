@@ -1,19 +1,15 @@
 <?php
 include_once("templates/header.php");
-
-// Exemplo: buscar alunos do banco
-// $alunos = mysqli_query($conn, "SELECT id, nome, matricula, status FROM alunos");
-$alunos = [
-    ["id" => 1, "nome" => "João da Silva", "matricula" => "2023001", "status" => "Em andamento"],
-    ["id" => 2, "nome" => "Maria Souza", "matricula" => "2023002", "status" => "Concluído"],
-    ["id" => 3, "nome" => "Pedro Lima", "matricula" => "2023003", "status" => "Aguardando revisão"],
-];
+include_once("config/dbconection.php");
+include_once("config/process.php");
+// Exemplo de alunos no banco (simulação)
+$usuarios = getAlunosVinculadosAoProfessor($conn)
 ?>
 
 <div class="container my-5">
     <div class="card shadow-lg">
         <div class="card-body">
-            
+
             <!-- Busca -->
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <div class="input-group w-50">
@@ -36,11 +32,11 @@ $alunos = [
                         </tr>
                     </thead>
                     <tbody id="tabelaAlunos">
-                        <?php foreach ($alunos as $aluno): ?>
-                            <tr onclick="window.location.href='entregas.php?id=<?= $aluno['id'] ?>'">
-                                <td><?= $aluno['nome'] ?></td>
-                                <td><?= $aluno['matricula'] ?></td>
-                                <td><?= $aluno['status'] ?></td>
+                        <?php foreach ($usuarios as $usuario): ?>
+                            <tr data-id="<?= $usuario['id'] ?>">
+                                <td><?= $usuario['nome'] ?></td>
+                                <td><?= $usuario['matricula'] ?></td>
+                                <td><?= $usuario['status'] ?></td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>
@@ -52,13 +48,12 @@ $alunos = [
 </div>
 
 <script>
-  const busca = document.getElementById("busca");
-  busca.addEventListener("keyup", function() {
-    let filtro = busca.value.toLowerCase();
-    let linhas = document.querySelectorAll("#tabelaAlunos tr");
-    linhas.forEach(linha => {
-      let texto = linha.textContent.toLowerCase();
-      linha.style.display = texto.includes(filtro) ? "" : "none";
+document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll("#tabelaAlunos tr").forEach(row => {
+        row.addEventListener("dblclick", () => {
+            let alunoId = row.getAttribute("data-id");
+            window.location.href = "entregas_aluno.php?id=" + alunoId;
+        });
     });
-  });
+});
 </script>

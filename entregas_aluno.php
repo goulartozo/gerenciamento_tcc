@@ -3,8 +3,15 @@ include_once("templates/header.php");
 include_once("config/process.php");
 include_once("config/dbconection.php");
 
+$tipo = $_SESSION['tipo'] ?? null;
 
-$entregasDoAluno = getTarefasEntregasAluno($conn);
+if (!$tipo) {
+    header("Location: index.php");
+    exit;
+}
+
+$alunoId = $_GET['id'] ?? $_SESSION['usuario_id'];
+$entregasDoAluno = getTarefasEntregasAluno($conn, $alunoId);
 ?>
 
 <?php if (isset($_SESSION["msg"])): ?>
@@ -31,59 +38,68 @@ $entregasDoAluno = getTarefasEntregasAluno($conn);
             3 => ['nome' => 'TC', 'data' => '20/11'],
             4 => ['nome' => 'Reelaboração TC', 'data' => '05/12']
         ];
-        
-        $tarefaAnteriorCompleta = true; 
+
+        $tarefaAnteriorCompleta = true;
+
+        $notaProposta = $entregasDoAluno[1]['nota'] ?? null;
+        $notaRelabProposta = $entregasDoAluno[2]['nota'] ?? null;
+        $notaTC = $entregasDoAluno[3]['nota'] ?? null;
 
         foreach ($tarefas as $id => $tarefa):
             $entregaAtual = $entregasDoAluno[$id] ?? null;
-            $statusAtual = $entregaAtual['status'] ?? 'não_enviado';
-            
-            $notaAtual = ($statusAtual === 'avaliado') ? $entregaAtual['nota'] : '—';
-            
-            // Lógica de habilitação sequencial
-            $tarefaHabilitada = ($id === 1 || $tarefaAnteriorCompleta);
+            $statusAtual = $entregaAtual['status'] ?? 'pendente';
+            $notaAtual = $entregaAtual['nota'] ?? '';
 
+            $habilitada = false;
+            if ($id == 1) {
+                // Proposta sempre habilitada
+                $habilitada = true;
+            } elseif ($id == 2) {
+                // Relaboração Proposta: só se nota da Proposta < 7
+                $habilitada = ($notaProposta !== null && $notaProposta < 7);
+            } elseif ($id == 3) {
+                // TC: só se nota da Relaboração Proposta >= 7
+                $habilitada = ($notaProposta!== null && $notaProposta >= 7 || $notaRelabProposta >= 7);
+            } elseif ($id == 4) {
+                // Reelaboração TC: só se nota do TC < 7
+                $habilitada = ($notaTC !== null && $notaTC < 7);
+            }
         ?>
-        <tr>
-            <td><?= $tarefa['data'] ?></td>
-            <td><?= $tarefa['nome'] ?></td>
-            <td><?= $notaAtual ?></td>
-            <td>
-                <form method="post" action="config/process.php" enctype="multipart/form-data">
-                    <input type="hidden" name="acao" value="upload">
-                    <input type="hidden" name="id" value="<?= $id ?>">
-                    
-                    <?php 
-                    // Se a tarefa não estiver habilitada, ela está pendente de uma anterior
-                    if (!$tarefaHabilitada): ?>
-                        <span class="d-block mb-2"></span>
-                        <input type="file" name="arquivo" disabled>
-                        <button type="submit" class="btn btn-primary" disabled>PENDENTE</button>
-                    
-                    <?php 
-                    // Se a tarefa estiver habilitada, pegamos as propriedades do status real
-                    else:
-                        $properties = getEnviosStatus($statusAtual);
-                    ?>
-                        <?php if ($statusAtual === 'enviado' || $statusAtual === 'avaliado'): ?>
-                            <span class="d-block mb-2">Arquivo enviado.</span>
-                        <?php endif; ?>
+            <tr>
+                <td><?= $tarefa['data'] ?></td>
+                <td><?= $tarefa['nome'] ?></td>
+                <td><?= $notaAtual ?></td>
+                <td>
+                    <!-- Formulário de envio para aluno -->
+                    <?php if ($tipo === 'aluno'): ?>
+                        <form method="post" action="config/process.php" enctype="multipart/form-data">
+                            <input type="hidden" name="acao" value="upload">
+                            <input type="hidden" name="id" value="<?= $id ?>">
 
-                        <?php if ($properties['disabled']): ?>
-                            <input type="file" name="arquivo" disabled>
-                            <button type="submit" class="btn btn-primary" disabled><?= $properties['button_text'] ?></button>
-                        <?php else: ?>
-                            <input type="file" name="arquivo" required>
-                            <button type="submit" class="btn btn-primary"><?= $properties['button_text'] ?></button>
-                        <?php endif; ?>
+                            <?php
+                            $jaEnviado = ($statusAtual === 'enviado' || $statusAtual === 'avaliado');
+                            ?>
+                            <input type="file" name="arquivo" <?= ($habilitada && !$jaEnviado) ? 'required' : 'disabled' ?>>
+                            <button type="submit" class="btn btn-primary" <?= ($habilitada && !$jaEnviado) ? '' : 'disabled' ?>>
+                                <?= ($habilitada && !$jaEnviado) ? 'Enviar' : 'Já enviado' ?>
+                            </button>
+                            <?php if ($jaEnviado): ?>
+                                <span class="text-success ms-2">Arquivo já enviado</span>
+                            <?php endif; ?>
+                        </form>
                     <?php endif; ?>
-                </form>
-            </td>
-        </tr>
-        <?php
-            // Atualiza o estado da variável para a próxima iteração
+
+                    <!-- Botão de download para professor -->
+                    <?php if ($tipo === 'professor' && !empty($entregaAtual['arquivo'])): ?>
+                        <a href="arquivos/<?= htmlspecialchars($entregaAtual['arquivo']) ?>" class="btn btn-success" download>
+                            Download
+                        </a>
+                    <?php endif; ?>
+                </td>
+            </tr>
+            <?php
             $tarefaAnteriorCompleta = ($statusAtual === 'enviado' || $statusAtual === 'avaliado');
-        ?>
+            ?>
         <?php endforeach; ?>
     </tbody>
 </table>
