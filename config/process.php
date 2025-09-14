@@ -120,14 +120,16 @@ if (!empty($data)) {
     }
 }
 
-function registrar_notas_avaliacao_proposta_tc($conn, $data, $BASE_URL, $alunoId = null)
+function registrar_notas_avaliacao_proposta_tc($conn, $data, $BASE_URL, $alunoId = null, $tarefaId = null)
 {
     $professor_id = $_SESSION['usuario_id'] ?? null;
     if (!$alunoId) {
         $alunoId = $data['aluno_id'] ?? null;
     }
-    $tarefaId = $data['tarefaId'] ?? 1; // ajuste conforme sua lógica
 
+    if (!$tarefaId) {
+        $tarefaId = $data['tarefa_id'] ?? null;
+    }
     // Notas dos requisitos
     $introducao   = floatval($data['introducao'] ?? 0);
     $objetivos    = floatval($data['objetivos'] ?? 0);

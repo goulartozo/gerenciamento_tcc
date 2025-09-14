@@ -1,12 +1,15 @@
 <?php
 include_once("templates/header.php");
 
-// Use APENAS o id da URL. Nunca da sessão.
 $alunoId = $_GET['id'] ?? null;
+$tarefaId = $_GET['tarefaId'] ?? null;
 
-// Se não houver id do aluno, não continue.
 if (!$alunoId) {
-    echo "<div class='alert alert-danger'>Erro: Aluno não especificado.</div>";
+    $alunoId = $data['aluno_id'] ?? null;
+}
+
+if (!$alunoId) {
+    echo "<div class='alert alert-danger'>Aluno não selecionado para avaliação.</div>";
     exit;
 }
 ?>
@@ -20,6 +23,7 @@ if (!$alunoId) {
                 <form action="config/process.php" method="post">
                     <input type="hidden" name="acao" value="proposta_ava">
                     <input type="hidden" name="aluno_id" value="<?= $alunoId ?>">
+                    <input type="hidden" name="tarefa_id" value="<?= $tarefaId ?>">
 
                     <!-- Introdução -->
                     <div class="row align-items-center mb-3">
