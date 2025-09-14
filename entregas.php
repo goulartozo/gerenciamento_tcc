@@ -10,17 +10,6 @@ $usuarios = getAlunosVinculadosAoProfessor($conn)
     <div class="card shadow-lg">
         <div class="card-body">
 
-            <!-- Busca -->
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <div class="input-group w-50">
-                    <input type="text" id="busca" class="form-control" placeholder="Buscar por nome ou matrícula...">
-                    <button class="btn btn-outline-secondary" type="button">
-                        <i class="bi bi-search"></i>
-                    </button>
-                </div>
-                <button class="btn btn-dark">Acessar</button>
-            </div>
-
             <!-- Tabela -->
             <div class="table-responsive">
                 <table class="table table-striped table-hover text-center align-middle">

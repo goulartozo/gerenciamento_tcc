@@ -9,7 +9,8 @@ include_once("url.php");
 
 $data = $_POST;
 
-function login($conn, $data, $BASE_URL) {
+function login($conn, $data, $BASE_URL)
+{
     $email = $data["email"];
     $pass  = $data["senha"];
     $tipo  = $data["tipo"];
@@ -47,7 +48,8 @@ function login($conn, $data, $BASE_URL) {
     exit;
 }
 
-function uploadEntrega($conn, $data, $BASE_URL) {
+function uploadEntrega($conn, $data, $BASE_URL)
+{
 
     $usuarioId = $_SESSION["usuario_id"] ?? null;
     $tarefaId  = $data["id"] ?? null;
@@ -56,7 +58,7 @@ function uploadEntrega($conn, $data, $BASE_URL) {
     if ($usuarioId && $tarefaId && isset($_FILES["arquivo"])) {
         $arquivo = $_FILES["arquivo"];
         $nomeFinal = uniqid() . "-" . basename($arquivo["name"]);
-        
+
         $destino = __DIR__ . "/../arquivos/" . $nomeFinal;
 
         if (move_uploaded_file($arquivo["tmp_name"], $destino)) {
@@ -100,7 +102,6 @@ function uploadEntrega($conn, $data, $BASE_URL) {
 if (!empty($data)) {
     $acao = $data["acao"] ?? "";
     $type = $data["type"] ?? "";
-    $acao = $data["acao"] ?? "";
 
     if ($type === "login") {
         login($conn, $data, $BASE_URL);
@@ -109,17 +110,111 @@ if (!empty($data)) {
     if ($acao === "upload") {
         uploadEntrega($conn, $data, $BASE_URL);
     }
-    
-    if ($acao === "reuniao"){
+
+    if ($acao === "reuniao") {
         registrar_reuniao($conn, $data, $BASE_URL);
+    }
+
+    if ($acao === "proposta_ava") {
+        registrar_notas_avaliacao_proposta_tc($conn, $data, $BASE_URL);
     }
 }
 
-function registrar_reuniao($conn, $data, $BASE_URL){
+function registrar_notas_avaliacao_proposta_tc($conn, $data, $BASE_URL, $alunoId = null)
+{
+    $professor_id = $_SESSION['usuario_id'] ?? null;
+    if (!$alunoId) {
+        $alunoId = $data['aluno_id'] ?? null;
+    }
+    $tarefaId = $data['tarefaId'] ?? 1; // ajuste conforme sua lógica
+
+    // Notas dos requisitos
+    $introducao   = floatval($data['introducao'] ?? 0);
+    $objetivos    = floatval($data['objetivos'] ?? 0);
+    $rev_biblio1  = floatval($data['rev_biblio1'] ?? 0);
+    $rev_biblio2  = floatval($data['rev_biblio2'] ?? 0);
+    $orientacao1  = floatval($data['orientacao1'] ?? 0);
+    $orientacao2  = floatval($data['orientacao2'] ?? 0);
+
+    // Resumo = soma das notas
+    $resumo = $introducao + $objetivos + $rev_biblio1 + $rev_biblio2 + $orientacao1 + $orientacao2;
+    $nota   = $resumo; // ou use média se preferir
+
+    // Verifica se já existe avaliação deste professor para este aluno/tarefa
+    $checkSql = "SELECT COUNT(*) FROM avaliacoes_proposta WHERE aluno_id = :aluno_id AND professor_id = :professor_id AND tarefa_id = :tarefa_id";
+    $checkStmt = $conn->prepare($checkSql);
+    $checkStmt->bindParam(':aluno_id', $alunoId);
+    $checkStmt->bindParam(':professor_id', $professor_id);
+    $checkStmt->bindParam(':tarefa_id', $tarefaId);
+    $checkStmt->execute();
+    $existe = $checkStmt->fetchColumn();
+
+    if ($existe > 0) {
+        $_SESSION["msg"] = "Você já avaliou este aluno.";
+        header("Location: $BASE_URL/entrada_professor.php");
+        exit;
+    }
+
+    // Insere a avaliação individual
+    $sql = "INSERT INTO avaliacoes_proposta (
+        aluno_id, professor_id, tarefa_id,
+        introducao, objetivos, rev_biblio1, rev_biblio2,
+        orientacao1, orientacao2, resumo, data_avaliacao
+    ) VALUES (
+        :aluno_id, :professor_id, :tarefa_id,
+        :introducao, :objetivos, :rev_biblio1, :rev_biblio2,
+        :orientacao1, :orientacao2, :resumo, NOW()
+    )";
+    try {
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(':aluno_id', $alunoId);
+        $stmt->bindParam(':professor_id', $professor_id);
+        $stmt->bindParam(':tarefa_id', $tarefaId);
+        $stmt->bindParam(':introducao', $introducao);
+        $stmt->bindParam(':objetivos', $objetivos);
+        $stmt->bindParam(':rev_biblio1', $rev_biblio1);
+        $stmt->bindParam(':rev_biblio2', $rev_biblio2);
+        $stmt->bindParam(':orientacao1', $orientacao1);
+        $stmt->bindParam(':orientacao2', $orientacao2);
+        $stmt->bindParam(':resumo', $resumo);
+        $stmt->execute();
+        $_SESSION["msg"] = "Avaliação registrada com sucesso!";
+    } catch (PDOException $e) {
+        $_SESSION["msg"] = "Erro ao registrar avaliação: " . $e->getMessage();
+        header("Location: $BASE_URL/entrada_professor.php");
+        exit;
+    }
+
+    // Após inserir, verifica se já existem 3 avaliações para este aluno/tarefa
+    $countSql = "SELECT AVG(nota) as media, COUNT(*) as total FROM avaliacoes_proposta WHERE aluno_id = :aluno_id AND tarefa_id = :tarefa_id";
+    $countStmt = $conn->prepare($countSql);
+    $countStmt->bindParam(':aluno_id', $alunoId);
+    $countStmt->bindParam(':tarefa_id', $tarefaId);
+    $countStmt->execute();
+    $result = $countStmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($result['total'] == 3) {
+        // Atualiza a entrega com a média final
+        $media = round($result['media'], 2);
+        $updateSql = "UPDATE entregas SET status = 'avaliado', nota = :media WHERE aluno_id = :aluno_id AND tarefa_id = :tarefa_id";
+        $updateStmt = $conn->prepare($updateSql);
+        $updateStmt->bindParam(':media', $media);
+        $updateStmt->bindParam(':aluno_id', $alunoId);
+        $updateStmt->bindParam(':tarefa_id', $tarefaId);
+        $updateStmt->execute();
+        $_SESSION["msg"] .= " | Média final registrada: $media";
+    }
+
+    header("Location: $BASE_URL/entrada_professor.php");
+    exit;
+}
+
+function registrar_reuniao($conn, $data, $BASE_URL)
+{
     $aluno_id = $_SESSION['usuario_id'];
     $datareuniao = $data['data'];
     $assunto = $data['assunto'];
-    $prof = $data['prof'] ?: '✔';  
+    $prof = $data['prof'] ?: '✔';
     $aluno = $data['aluno'] ?: '✔';
 
     $sql_prof = "SELECT professor_id FROM usuarios WHERE id = :aluno_id";
@@ -150,7 +245,8 @@ function registrar_reuniao($conn, $data, $BASE_URL){
     exit;
 }
 
-function getReunioesAluno($conn) {
+function getReunioesAluno($conn)
+{
     $aluno_id = $_SESSION['usuario_id'] ?? null;
     if (!$aluno_id) return [];
 
@@ -165,14 +261,12 @@ function getReunioesAluno($conn) {
     }
 }
 
-function getAlunosVinculadosAoProfessor($conn){
+function getAlunosVinculadosAoProfessor($conn)
+{
     $professor_id = $_SESSION['usuario_id'] ?? null;
     if (!$professor_id) return [];
-    
-    try{
 
-       // $sql = "select * from usuarios where professor_id = :professor_id and tipo = 'aluno'";
-
+    try {
         $sql = "
             SELECT 
                 u.id,
@@ -187,38 +281,36 @@ function getAlunosVinculadosAoProfessor($conn){
                     THEN 'enviado'
                     ELSE 'não enviado'
                 END AS status
-            FROM usuarios u
-            WHERE u.professor_id = :professor_id
-              AND u.tipo = 'aluno'
+            FROM aluno_professores ap
+            JOIN usuarios u ON ap.aluno_id = u.id
+            WHERE ap.professor_id = :professor_id
         ";
-
-
         $stmt = $conn->prepare($sql);
         $stmt->bindParam(':professor_id', $professor_id);
         $stmt->execute();
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    } catch(PDOException $e) {
-
+    } catch (PDOException $e) {
         return [];
     }
 }
 
-function getAlunosProfessores($conn) {
-    try{
+function getAlunosProfessores($conn)
+{
+    try {
         $sql = "select * from usuarios";
 
         $stmt = $conn->prepare($sql);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    } catch(PDOException $e) {
+    } catch (PDOException $e) {
 
         return [];
     }
 }
 
-function getEnviosStatus($status){
+function getEnviosStatus($status)
+{
     $properties = ['disabled' => false, 'button_text' => 'ENVIAR'];
 
     if ($status === 'pendente') {
@@ -235,7 +327,8 @@ function getEnviosStatus($status){
     return $properties;
 }
 
-function getTarefasEntregasAluno($conn, $alunoId = null) {
+function getTarefasEntregasAluno($conn, $alunoId = null)
+{
     if (!$alunoId) {
         $alunoId = $_SESSION["usuario_id"] ?? null;
     }
@@ -266,3 +359,24 @@ function getTarefasEntregasAluno($conn, $alunoId = null) {
     }
 }
 
+function getProfessoresDoAluno($conn, $alunoId)
+{
+    try {
+        $sql = "
+            SELECT 
+                p.id,
+                p.nome,
+                ap.tipo
+            FROM aluno_professores ap
+            JOIN usuarios p ON ap.professor_id = p.id
+            WHERE ap.aluno_id = :aluno_id
+        ";
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(':aluno_id', $alunoId);
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        return [];
+    }
+}

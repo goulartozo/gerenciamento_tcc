@@ -1,5 +1,14 @@
 <?php
 include_once("templates/header.php");
+
+// Use APENAS o id da URL. Nunca da sessão.
+$alunoId = $_GET['id'] ?? null;
+
+// Se não houver id do aluno, não continue.
+if (!$alunoId) {
+    echo "<div class='alert alert-danger'>Erro: Aluno não especificado.</div>";
+    exit;
+}
 ?>
 
 <div class="bg-light">
@@ -8,7 +17,9 @@ include_once("templates/header.php");
             <div class="card-body">
                 <h4 class="text-center mb-4">Avaliação da Proposta de TC</h4>
 
-                <form action="salvar_avaliacao.php" method="post">
+                <form action="config/process.php" method="post">
+                    <input type="hidden" name="acao" value="proposta_ava">
+                    <input type="hidden" name="aluno_id" value="<?= $alunoId ?>">
 
                     <!-- Introdução -->
                     <div class="row align-items-center mb-3">

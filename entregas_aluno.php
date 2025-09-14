@@ -10,8 +10,18 @@ if (!$tipo) {
     exit;
 }
 
-$alunoId = $_GET['id'] ?? $_SESSION['usuario_id'];
-$entregasDoAluno = getTarefasEntregasAluno($conn, $alunoId);
+// 1. Capture o ID do aluno da URL
+$alunoId = $_GET['id'] ?? null;
+$tarefaId = $_GET['id'] ?? null;
+
+// Se não houver ID, não continue
+if (!$alunoId) {
+    echo "<div class='alert alert-danger'>Erro: Aluno não especificado.</div>";
+    exit;
+}
+
+// ... seu código para buscar as entregas do aluno ...
+$entregasDoAluno = getTarefasEntregasAluno($conn, $alunoId, $tarefaId);
 ?>
 
 <?php if (isset($_SESSION["msg"])): ?>
@@ -93,6 +103,9 @@ $entregasDoAluno = getTarefasEntregasAluno($conn, $alunoId);
                     <?php if ($tipo === 'professor' && !empty($entregaAtual['arquivo'])): ?>
                         <a href="arquivos/<?= htmlspecialchars($entregaAtual['arquivo']) ?>" class="btn btn-success" download>
                             Download
+                        </a>
+                        <a href="avaliacao_proposta_tc.php?id=<?= $alunoId ?>&tarefaId=<?= $id ?>"class="btn btn-primary">
+                            Avaliar
                         </a>
                     <?php endif; ?>
                 </td>
