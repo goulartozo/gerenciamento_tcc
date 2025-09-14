@@ -15,7 +15,7 @@
 <div class="row row-cols-1 row-cols-md-3 g-4">
   <div class="col">
     <div class="card">
-      <a href="entregas_aluno.php" class="card h-100">
+      <a href="entregas_aluno.php?id=<?= $_SESSION['usuario_id'] ?>" class="card h-100">
         <img src="./img/entragas_img.jpg" class="card-img-top" alt="Entregas">
         <div class="card-body">
           <h5 class="card-title">Entregas</h5>

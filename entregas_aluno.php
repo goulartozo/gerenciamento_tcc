@@ -12,7 +12,7 @@ if (!$tipo) {
 
 // 1. Capture o ID do aluno da URL
 $alunoId = $_GET['id'] ?? null;
-$tarefaId = $_GET['id'] ?? null;
+$tarefaId = $_GET['tarefaId'] ?? null;
 
 // Se não houver ID, não continue
 if (!$alunoId) {
@@ -21,7 +21,7 @@ if (!$alunoId) {
 }
 
 // ... seu código para buscar as entregas do aluno ...
-$entregasDoAluno = getTarefasEntregasAluno($conn, $alunoId, $tarefaId);
+$entregasDoAluno = getTarefasEntregasAluno($conn, $alunoId);
 ?>
 
 <?php if (isset($_SESSION["msg"])): ?>
