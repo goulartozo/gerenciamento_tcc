@@ -1,5 +1,7 @@
 <?php
 include_once("templates/header.php");
+
+
 ?>
 
 <div>
@@ -7,6 +9,9 @@ include_once("templates/header.php");
         <div class="card shadow-lg col-md-6 mx-auto">
             <div class="card-body">
                 <h3 class="text-center mb-4">Cadastro</h3>
+                
+                <form action="config/process.php" method="post" id="cadastroForm">
+                <input type="hidden" name="acao" value="cadastro_formulario_aluno_professor">
 
                 <!-- Escolha -->
                 <div class="mb-3 text-center">
@@ -21,8 +26,7 @@ include_once("templates/header.php");
                 </div>
 
                 <!-- Formulário -->
-                <form action="salvar_cadastro.php" method="post" id="cadastroForm">
-
+                
                     <!-- Campos do Aluno -->
                     <div id="formAluno">
                         <div class="mb-3">

@@ -118,6 +118,103 @@ if (!empty($data)) {
     if ($acao === "proposta_ava") {
         registrar_notas_avaliacao_proposta_tc($conn, $data, $BASE_URL);
     }
+
+    if ($acao === "cadastro_formulario_aluno_professor"){
+        cadastro_aluno_professor($conn, $data, $BASE_URL);
+    }
+}
+
+function cadastro_aluno_professor($conn, $data, $BASE_URL)
+{
+    $tipo = $data['tipo'];
+    $nomeAluno = $data['nome_aluno'];
+    $matricula = $data['matricula'];
+    $email_aluno = $data['email_aluno'];
+    $curso_aluno = $data['curso_aluno'];
+    $orientador = $data['orientador'];
+    $banca1 = $data['banca1'];
+    $banca2 = $data['banca2'];
+    $senha_aluno = $data['senha_aluno'];
+    $nome_professor =  $data['nome_professor'];
+    $email_professor = $data['email_professor'];
+    $curso_professor = $data['curso_professor'];
+    $senha_professor = $data['senha_professor'];
+
+    if ($tipo === "aluno") {
+        $sql_insert_aluno = "INSERT INTO public.usuarios(
+	nome, email, senha, tipo, curso, matricula)
+	VALUES ( :nome_aluno, :email_aluno, :senha_aluno, :tipo, :curso_aluno, :matricula);";
+        try{
+            $stmt = $conn->prepare($sql_insert_aluno);
+            $stmt->bindParam(':nome_aluno', $nomeAluno);
+            $stmt->bindParam(':email_aluno', $email_aluno);
+            $stmt->bindParam(':senha_aluno', $senha_aluno);
+            $stmt->bindParam(':tipo', $tipo);
+            $stmt->bindParam(':curso_aluno', $curso_aluno);
+            $stmt->bindParam(':matricula', $matricula);
+            $stmt->execute(); 
+            
+        } catch (PDOException $e) {
+        $_SESSION["msg"] = "Erro ao cadastrar aluno: " . $e->getMessage();
+        header("Location: $BASE_URL/cadastro_aluno_professor.php");
+        exit;
+        }
+
+        vincula_aluno_professor($conn, $nomeAluno, $orientador, $banca1, $banca2);
+
+    } else {
+        $sql_insert_professor = "INSERT INTO public.usuarios(
+	nome, email, senha, tipo, curso)
+	VALUES ( :nome_professor, :email_professor, :senha_professor, :tipo, :curso_professor);";
+    
+        $stmt = $conn->prepare($sql_insert_professor);
+        $stmt->bindParam(':nome_professor', $nome_professor);
+        $stmt->bindParam(':email_professor', $email_professor);
+        $stmt->bindParam(':senha_professor', $senha_professor);
+        $stmt->bindParam(':tipo', $tipo);
+        $stmt->bindParam(':curso_professor', $curso_professor);
+        $stmt->execute();
+    }
+}
+
+function vincula_aluno_professor($conn, $nomeAluno, $orientador, $banca1, $banca2){
+    $select_busca_aluno = "SELECT id FROM public.usuarios WHERE nome = :nomeAluno;";
+    $select_busca_orientador = "SELECT id FROM public.usuarios WHERE nome = :orientador;";
+    $select_busca_banca1 = "SELECT id FROM public.usuarios WHERE nome = :banca1;";
+    $select_busca_banca2 = "SELECT id FROM public.usuarios WHERE nome = :banca2;";
+
+    $stmt = $conn->prepare($select_busca_aluno);
+    $stmt->bindParam(':nomeAluno', $nomeAluno);
+    $stmt->execute();
+    $id_aluno = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    $stmt2 = $conn->prepare($select_busca_orientador);
+    $stmt2->bindParam(':orientador', $orientador);
+    $stmt2->execute();
+    $id_orientador = $stmt2->fetch(PDO::FETCH_ASSOC);
+
+    $stmt3 = $conn->prepare($select_busca_banca1);
+    $stmt3->bindParam(':banca1', $banca1);
+    $stmt3->execute();
+    $id_banca1 = $stmt3->fetch(PDO::FETCH_ASSOC);
+
+    $stmt4 = $conn->prepare($select_busca_banca2);
+    $stmt4->bindParam(':banca2', $banca2);
+    $stmt4->execute();
+    $id_banca2 = $stmt4->fetch(PDO::FETCH_ASSOC);
+
+    $insert_aluno_professor = "INSERT INTO public.aluno_professores (aluno_id, professor_id, tipo)
+        VALUES (?, ?, ?);";
+    $stmt_insert = $conn->prepare($insert_aluno_professor);
+
+    // Orientador
+    $stmt_insert->execute([$id_aluno['id'], $id_orientador['id'], 'orientador']);
+
+    // Banca1
+    $stmt_insert->execute([$id_aluno['id'], $id_banca1['id'], 'banca1']);
+
+    // Banca2
+    $stmt_insert->execute([$id_aluno['id'], $id_banca2['id'], 'banca2']);
 }
 
 function registrar_notas_avaliacao_proposta_tc($conn, $data, $BASE_URL, $alunoId = null, $tarefaId = null)
