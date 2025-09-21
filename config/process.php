@@ -162,18 +162,32 @@ function cadastro_aluno_professor($conn, $data, $BASE_URL)
 
         vincula_aluno_professor($conn, $nomeAluno, $orientador, $banca1, $banca2);
 
+        header("Location: $BASE_URL/cadastro_aluno_professor.php");
+        exit;
+
     } else {
-        $sql_insert_professor = "INSERT INTO public.usuarios(
-	nome, email, senha, tipo, curso)
-	VALUES ( :nome_professor, :email_professor, :senha_professor, :tipo, :curso_professor);";
-    
-        $stmt = $conn->prepare($sql_insert_professor);
-        $stmt->bindParam(':nome_professor', $nome_professor);
-        $stmt->bindParam(':email_professor', $email_professor);
-        $stmt->bindParam(':senha_professor', $senha_professor);
-        $stmt->bindParam(':tipo', $tipo);
-        $stmt->bindParam(':curso_professor', $curso_professor);
-        $stmt->execute();
+        try {
+            $sql_insert_professor = "INSERT INTO public.usuarios(
+        nome, email, senha, tipo, curso)
+        VALUES ( :nome_professor, :email_professor, :senha_professor, :tipo, :curso_professor);";
+        
+            $stmt = $conn->prepare($sql_insert_professor);
+            $stmt->bindParam(':nome_professor', $nome_professor);
+            $stmt->bindParam(':email_professor', $email_professor);
+            $stmt->bindParam(':senha_professor', $senha_professor);
+            $stmt->bindParam(':tipo', $tipo);
+            $stmt->bindParam(':curso_professor', $curso_professor);
+            $stmt->execute();
+
+            header("Location: $BASE_URL/cadastro_aluno_professor.php");
+            exit;
+
+
+        } catch (PDOException $e) {
+        $_SESSION["msg"] = "Erro ao cadastrar professor: " . $e->getMessage();
+        header("Location: $BASE_URL/cadastro_aluno_professor.php");
+        exit;
+        }
     }
 }
 
