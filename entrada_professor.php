@@ -6,7 +6,7 @@ if (!isset($_SESSION["usuario_id"])) {
   exit;
 }
 
-if ($_SESSION['tipo'] !== 'professor') {
+if ($_SESSION['tipo'] !== 'professor' && $_SESSION['tipo'] !== 'coordenador') {
   header("Location: acesso_negado.php");
   exit;
 }
@@ -34,7 +34,7 @@ if ($_SESSION['tipo'] !== 'professor') {
   <div class="col">
     <div class="card">
       <a href="entregas.php" class="card h-100">
-        <img src="./img/alunos_img.jpg" class="card-img-top" alt="Notificações">
+        <img src="./img/alunos_img.jpg" class="card-img-top" alt="Entregas">
         <div class="card-body">
           <h5 class="card-title">Meus alunos</h5>
           <p class="card-text">Neste card você terá acesso a todos os alunos vinculados a você.</p>
@@ -42,5 +42,17 @@ if ($_SESSION['tipo'] !== 'professor') {
       </a>
     </div>
   </div>
-
+  <?php if ($_SESSION['tipo'] == 'coordenador'): ?>
+    <div class="col">
+      <div class="card">
+        <a href="cadastro_aluno_professor.php" class="card h-100">
+          <img src="./img/cadastro_img.jpg" class="card-img-top" alt="Alunos">
+          <div class="card-body">
+            <h5 class="card-title">Cadastrar Usuário</h5>
+            <p class="card-text">Neste card você terá acesso a todos os alunos da instituição.</p>
+          </div>
+        </a>
+      </div>
+    </div>
+  <?php endif; ?>
 </div>

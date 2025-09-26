@@ -33,6 +33,8 @@ function login($conn, $data, $BASE_URL)
                     header("Location: $BASE_URL/entrada_aluno.php");
                 } elseif ($user["tipo"] === 'professor') {
                     header("Location: $BASE_URL/entrada_professor.php");
+                } elseif ($user["tipo"] === 'coordenador') {
+                    header("Location: $BASE_URL/entrada_professor.php");
                 }
                 exit;
             } else {
@@ -119,7 +121,7 @@ if (!empty($data)) {
         registrar_notas_avaliacao_proposta_tc($conn, $data, $BASE_URL);
     }
 
-    if ($acao === "cadastro_formulario_aluno_professor"){
+    if ($acao === "cadastro_formulario_aluno_professor") {
         cadastro_aluno_professor($conn, $data, $BASE_URL);
     }
 }
@@ -144,7 +146,7 @@ function cadastro_aluno_professor($conn, $data, $BASE_URL)
         $sql_insert_aluno = "INSERT INTO public.usuarios(
 	nome, email, senha, tipo, curso, matricula)
 	VALUES ( :nome_aluno, :email_aluno, :senha_aluno, :tipo, :curso_aluno, :matricula);";
-        try{
+        try {
             $stmt = $conn->prepare($sql_insert_aluno);
             $stmt->bindParam(':nome_aluno', $nomeAluno);
             $stmt->bindParam(':email_aluno', $email_aluno);
@@ -152,25 +154,23 @@ function cadastro_aluno_professor($conn, $data, $BASE_URL)
             $stmt->bindParam(':tipo', $tipo);
             $stmt->bindParam(':curso_aluno', $curso_aluno);
             $stmt->bindParam(':matricula', $matricula);
-            $stmt->execute(); 
-            
+            $stmt->execute();
         } catch (PDOException $e) {
-        $_SESSION["msg"] = "Erro ao cadastrar aluno: " . $e->getMessage();
-        header("Location: $BASE_URL/cadastro_aluno_professor.php");
-        exit;
+            $_SESSION["msg"] = "Erro ao cadastrar aluno: " . $e->getMessage();
+            header("Location: $BASE_URL/cadastro_aluno_professor.php");
+            exit;
         }
 
         vincula_aluno_professor($conn, $nomeAluno, $orientador, $banca1, $banca2);
 
         header("Location: $BASE_URL/cadastro_aluno_professor.php");
         exit;
-
     } else {
         try {
             $sql_insert_professor = "INSERT INTO public.usuarios(
         nome, email, senha, tipo, curso)
         VALUES ( :nome_professor, :email_professor, :senha_professor, :tipo, :curso_professor);";
-        
+
             $stmt = $conn->prepare($sql_insert_professor);
             $stmt->bindParam(':nome_professor', $nome_professor);
             $stmt->bindParam(':email_professor', $email_professor);
@@ -181,17 +181,16 @@ function cadastro_aluno_professor($conn, $data, $BASE_URL)
 
             header("Location: $BASE_URL/cadastro_aluno_professor.php");
             exit;
-
-
         } catch (PDOException $e) {
-        $_SESSION["msg"] = "Erro ao cadastrar professor: " . $e->getMessage();
-        header("Location: $BASE_URL/cadastro_aluno_professor.php");
-        exit;
+            $_SESSION["msg"] = "Erro ao cadastrar professor: " . $e->getMessage();
+            header("Location: $BASE_URL/cadastro_aluno_professor.php");
+            exit;
         }
     }
 }
 
-function vincula_aluno_professor($conn, $nomeAluno, $orientador, $banca1, $banca2){
+function vincula_aluno_professor($conn, $nomeAluno, $orientador, $banca1, $banca2)
+{
     $select_busca_aluno = "SELECT id FROM public.usuarios WHERE nome = :nomeAluno;";
     $select_busca_orientador = "SELECT id FROM public.usuarios WHERE nome = :orientador;";
     $select_busca_banca1 = "SELECT id FROM public.usuarios WHERE nome = :banca1;";
@@ -374,10 +373,40 @@ function getReunioesAluno($conn)
     }
 }
 
+function getAlunos($conn)
+{
+    try {
+        $sql = "SELECT 
+                u.id,
+                u.nome,
+                u.matricula,
+                CASE 
+                    WHEN EXISTS (
+                        SELECT 1 FROM entregas e 
+                        WHERE e.aluno_id = u.id 
+                          AND e.status = 'enviado'
+                    )
+                    THEN 'enviado'
+                    ELSE 'não enviado'
+                END AS status
+            FROM aluno_professores ap
+            JOIN usuarios u ON ap.aluno_id = u.id
+        ";
+
+        $stmt = $conn->prepare($sql);
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        return [];
+    }
+}
+
 function getAlunosVinculadosAoProfessor($conn)
 {
     $professor_id = $_SESSION['usuario_id'] ?? null;
     if (!$professor_id) return [];
+
 
     try {
         $sql = "

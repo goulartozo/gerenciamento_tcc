@@ -10,17 +10,14 @@ if (!$tipo) {
     exit;
 }
 
-// 1. Capture o ID do aluno da URL
 $alunoId = $_GET['id'] ?? null;
 $tarefaId = $_GET['tarefaId'] ?? null;
 
-// Se não houver ID, não continue
 if (!$alunoId) {
     echo "<div class='alert alert-danger'>Erro: Aluno não especificado.</div>";
     exit;
 }
 
-// ... seu código para buscar as entregas do aluno ...
 $entregasDoAluno = getTarefasEntregasAluno($conn, $alunoId);
 ?>
 

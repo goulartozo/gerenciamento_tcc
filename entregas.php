@@ -2,8 +2,13 @@
 include_once("templates/header.php");
 include_once("config/dbconection.php");
 include_once("config/process.php");
-// Exemplo de alunos no banco (simulação)
-$usuarios = getAlunosVinculadosAoProfessor($conn)
+
+if ($_SESSION['tipo'] === 'professor') {
+    $usuarios = getAlunosVinculadosAoProfessor($conn);
+} else {
+    $usuarios = getAlunos($conn);
+}
+
 ?>
 
 <div class="container my-5">
@@ -37,12 +42,12 @@ $usuarios = getAlunosVinculadosAoProfessor($conn)
 </div>
 
 <script>
-document.addEventListener("DOMContentLoaded", () => {
-    document.querySelectorAll("#tabelaAlunos tr").forEach(row => {
-        row.addEventListener("dblclick", () => {
-            let alunoId = row.getAttribute("data-id");
-            window.location.href = "entregas_aluno.php?id=" + alunoId;
+    document.addEventListener("DOMContentLoaded", () => {
+        document.querySelectorAll("#tabelaAlunos tr").forEach(row => {
+            row.addEventListener("dblclick", () => {
+                let alunoId = row.getAttribute("data-id");
+                window.location.href = "entregas_aluno.php?id=" + alunoId;
+            });
         });
     });
-});
 </script>
