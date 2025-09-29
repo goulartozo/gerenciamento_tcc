@@ -3,6 +3,8 @@ include_once("templates/header.php");
 include_once("config/process.php");
 include_once("config/dbconection.php");
 
+include 'templates/backButton.php';
+
 $tipo = $_SESSION['tipo'] ?? null;
 
 if (!$tipo) {
@@ -66,7 +68,7 @@ $entregasDoAluno = getTarefasEntregasAluno($conn, $alunoId);
                 $habilitada = ($notaProposta !== null && $notaProposta < 7);
             } elseif ($id == 3) {
                 // TC: só se nota da Relaboração Proposta >= 7
-                $habilitada = ($notaProposta!== null && $notaProposta >= 7 || $notaRelabProposta >= 7);
+                $habilitada = ($notaProposta !== null && $notaProposta >= 7 || $notaRelabProposta >= 7);
             } elseif ($id == 4) {
                 // Reelaboração TC: só se nota do TC < 7
                 $habilitada = ($notaTC !== null && $notaTC < 7);
@@ -101,7 +103,7 @@ $entregasDoAluno = getTarefasEntregasAluno($conn, $alunoId);
                         <a href="arquivos/<?= htmlspecialchars($entregaAtual['arquivo']) ?>" class="btn btn-success" download>
                             Download
                         </a>
-                        <a href="avaliacao_proposta_tc.php?id=<?= $alunoId ?>&tarefaId=<?= $id ?>"class="btn btn-primary">
+                        <a href="avaliacao_proposta_tc.php?id=<?= $alunoId ?>&tarefaId=<?= $id ?>" class="btn btn-primary">
                             Avaliar
                         </a>
                     <?php endif; ?>

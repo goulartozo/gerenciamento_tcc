@@ -240,19 +240,18 @@ function registrar_notas_avaliacao_proposta_tc($conn, $data, $BASE_URL, $alunoId
     if (!$tarefaId) {
         $tarefaId = $data['tarefa_id'] ?? null;
     }
-    // Notas dos requisitos
+
     $introducao   = floatval($data['introducao'] ?? 0);
     $objetivos    = floatval($data['objetivos'] ?? 0);
     $rev_biblio1  = floatval($data['rev_biblio1'] ?? 0);
     $rev_biblio2  = floatval($data['rev_biblio2'] ?? 0);
     $orientacao1  = floatval($data['orientacao1'] ?? 0);
     $orientacao2  = floatval($data['orientacao2'] ?? 0);
+    $observacao = $data['observacao'];
 
-    // Resumo = soma das notas
     $resumo = $introducao + $objetivos + $rev_biblio1 + $rev_biblio2 + $orientacao1 + $orientacao2;
     $nota   = $resumo; // ou use média se preferir
 
-    // Verifica se já existe avaliação deste professor para este aluno/tarefa
     $checkSql = "SELECT COUNT(*) FROM avaliacoes_proposta WHERE aluno_id = :aluno_id AND professor_id = :professor_id AND tarefa_id = :tarefa_id";
     $checkStmt = $conn->prepare($checkSql);
     $checkStmt->bindParam(':aluno_id', $alunoId);
@@ -267,15 +266,14 @@ function registrar_notas_avaliacao_proposta_tc($conn, $data, $BASE_URL, $alunoId
         exit;
     }
 
-    // Insere a avaliação individual
     $sql = "INSERT INTO avaliacoes_proposta (
         aluno_id, professor_id, tarefa_id,
         introducao, objetivos, rev_biblio1, rev_biblio2,
-        orientacao1, orientacao2, resumo, data_avaliacao
+        orientacao1, orientacao2, resumo, data_avaliacao, observacoes
     ) VALUES (
         :aluno_id, :professor_id, :tarefa_id,
         :introducao, :objetivos, :rev_biblio1, :rev_biblio2,
-        :orientacao1, :orientacao2, :resumo, NOW()
+        :orientacao1, :orientacao2, :resumo, NOW(),  :observacao 
     )";
     try {
         $stmt = $conn->prepare($sql);
@@ -289,6 +287,7 @@ function registrar_notas_avaliacao_proposta_tc($conn, $data, $BASE_URL, $alunoId
         $stmt->bindParam(':orientacao1', $orientacao1);
         $stmt->bindParam(':orientacao2', $orientacao2);
         $stmt->bindParam(':resumo', $resumo);
+        $stmt->bindParam(':observacao', $observacao);
         $stmt->execute();
         $_SESSION["msg"] = "Avaliação registrada com sucesso!";
     } catch (PDOException $e) {
@@ -380,17 +379,23 @@ function getAlunos($conn)
                 u.id,
                 u.nome,
                 u.matricula,
+                MAX(CASE WHEN ap.tipo = 'orientador' THEN p.nome END) AS orientador,
+                MAX(CASE WHEN ap.tipo = 'banca1' THEN p.nome END) AS banca1,
+                MAX(CASE WHEN ap.tipo = 'banca2' THEN p.nome END) AS banca2,
                 CASE 
                     WHEN EXISTS (
-                        SELECT 1 FROM entregas e 
+                        SELECT 1 
+                        FROM entregas e 
                         WHERE e.aluno_id = u.id 
-                          AND e.status = 'enviado'
+                        AND e.status = 'enviado'
                     )
                     THEN 'enviado'
                     ELSE 'não enviado'
                 END AS status
             FROM aluno_professores ap
             JOIN usuarios u ON ap.aluno_id = u.id
+            LEFT JOIN usuarios p ON ap.professor_id = p.id
+            GROUP BY u.id, u.nome, u.matricula;
         ";
 
         $stmt = $conn->prepare($sql);
@@ -411,21 +416,26 @@ function getAlunosVinculadosAoProfessor($conn)
     try {
         $sql = "
             SELECT 
-                u.id,
-                u.nome,
-                u.matricula,
-                CASE 
-                    WHEN EXISTS (
-                        SELECT 1 FROM entregas e 
-                        WHERE e.aluno_id = u.id 
-                          AND e.status = 'enviado'
-                    )
-                    THEN 'enviado'
-                    ELSE 'não enviado'
-                END AS status
-            FROM aluno_professores ap
-            JOIN usuarios u ON ap.aluno_id = u.id
-            WHERE ap.professor_id = :professor_id
+            u.id,
+            u.nome,
+            u.matricula,
+            CASE 
+                WHEN ap.tipo IN ('banca1', 'banca2') THEN 'Banca'
+                ELSE ap.tipo
+            END AS tipo,
+            CASE 
+                WHEN EXISTS (
+                    SELECT 1 
+                    FROM entregas e 
+                    WHERE e.aluno_id = u.id 
+                    AND e.status = 'enviado'
+                )
+                THEN 'enviado'
+                ELSE 'não enviado'
+            END AS status
+        FROM aluno_professores ap
+        JOIN usuarios u ON ap.aluno_id = u.id
+        WHERE ap.professor_id = :professor_id;
         ";
         $stmt = $conn->prepare($sql);
         $stmt->bindParam(':professor_id', $professor_id);
@@ -440,7 +450,17 @@ function getAlunosVinculadosAoProfessor($conn)
 function getAlunosProfessores($conn)
 {
     try {
-        $sql = "select * from usuarios";
+        $sql = "SELECT 
+        u.nome,
+        u.matricula,
+        u.status,
+        MAX(CASE WHEN ap.tipo = 'orientador' THEN p.nome END) AS orientador,
+        MAX(CASE WHEN ap.tipo = 'banca1' THEN p.nome END) AS banca1,
+        MAX(CASE WHEN ap.tipo = 'banca2' THEN p.nome END) AS banca2
+    FROM usuarios u
+    LEFT JOIN aluno_professores ap ON u.id = ap.aluno_id
+    LEFT JOIN usuarios p ON ap.professor_id = p.id
+    GROUP BY u.id, u.nome, u.matricula, u.email, u.status;";
 
         $stmt = $conn->prepare($sql);
         $stmt->execute();

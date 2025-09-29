@@ -3,6 +3,8 @@ include_once("templates/header.php");
 include_once("config/dbconection.php");
 include_once("config/process.php");
 
+include 'templates/backButton.php';
+
 if ($_SESSION['tipo'] === 'professor') {
     $usuarios = getAlunosVinculadosAoProfessor($conn);
 } else {
@@ -23,6 +25,14 @@ if ($_SESSION['tipo'] === 'professor') {
                             <th>Nome</th>
                             <th>Matrícula</th>
                             <th>Status</th>
+                            <?php if ($_SESSION['tipo'] === 'professor'): ?>
+                                <th>Tipo de avaliador</th>
+                            <?php endif; ?>
+                            <?php if ($_SESSION['tipo'] === 'coordenador'): ?>
+                                <th>Orientador</th>
+                                <th>Banca 1</th>
+                                <th>Banca 2</th>
+                            <?php endif; ?>
                         </tr>
                     </thead>
                     <tbody id="tabelaAlunos">
@@ -31,6 +41,15 @@ if ($_SESSION['tipo'] === 'professor') {
                                 <td><?= $usuario['nome'] ?></td>
                                 <td><?= $usuario['matricula'] ?></td>
                                 <td><?= $usuario['status'] ?></td>
+                                <?php if ($_SESSION['tipo'] === 'professor'): ?>
+                                    <td><?= $usuario['tipo'] ?></td>
+                                <?php endif; ?>
+                                <?php if ($_SESSION['tipo'] === 'coordenador'): ?>
+                                    <td><?= $usuario['orientador'] ?></td>
+                                    <td><?= $usuario['banca1'] ?></td>
+                                    <td><?= $usuario['banca2'] ?></td>
+                                <?php endif; ?>
+
                             </tr>
                         <?php endforeach; ?>
                     </tbody>

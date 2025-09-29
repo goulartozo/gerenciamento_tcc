@@ -2,7 +2,9 @@
 include_once("templates/header.php");
 include_once("config/dbconection.php");
 include_once("config/process.php");
-// Exemplo de alunos no banco (simulação)
+
+include 'templates/backButton.php';
+
 $usuarios = getAlunosVinculadosAoProfessor($conn)
 ?>
 
@@ -59,15 +61,15 @@ $usuarios = getAlunosVinculadosAoProfessor($conn)
 </div>
 
 <script>
-// Ativar botões somente quando um aluno for selecionado
-const radios = document.querySelectorAll("input[name='selectAluno']");
-const editarBtn = document.getElementById("editarBtn");
-const excluirBtn = document.getElementById("excluirBtn");
+    // Ativar botões somente quando um aluno for selecionado
+    const radios = document.querySelectorAll("input[name='selectAluno']");
+    const editarBtn = document.getElementById("editarBtn");
+    const excluirBtn = document.getElementById("excluirBtn");
 
-radios.forEach(radio => {
-    radio.addEventListener("change", () => {
-        editarBtn.disabled = false;
-        excluirBtn.disabled = false;
+    radios.forEach(radio => {
+        radio.addEventListener("change", () => {
+            editarBtn.disabled = false;
+            excluirBtn.disabled = false;
+        });
     });
-});
 </script>

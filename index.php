@@ -13,15 +13,15 @@ include_once("templates/header.php");
         <input type="hidden" name="type" value="login">
         <h1 class="text-center">Login</h1>
         <div class="form-check">
-            <input class="form-check-input" type="radio" name="tipo" id="flexRadioDefault1" value="aluno"checked>
+            <input class="form-check-input" type="radio" name="tipo" id="flexRadioDefault1" value="aluno" checked>
             <label class="form-check-label" for="flexRadioDefault1">Aluno</label>
         </div>
         <div class="form-check">
-            <input class="form-check-input" type="radio" name="tipo" id="flexRadioDefault2" value="professor" >
+            <input class="form-check-input" type="radio" name="tipo" id="flexRadioDefault2" value="professor">
             <label class="form-check-label" for="flexRadioDefault2">Professor</label>
         </div>
         <div class="form-check">
-            <input class="form-check-input" type="radio" name="tipo" id="flexRadioDefault3" value="coordenador" >
+            <input class="form-check-input" type="radio" name="tipo" id="flexRadioDefault3" value="coordenador">
             <label class="form-check-label" for="flexRadioDefault2">Coordenador</label>
         </div>
         <div class="mb-3">

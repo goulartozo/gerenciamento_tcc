@@ -1,6 +1,8 @@
 <?php
 include_once("templates/header.php");
 
+include 'templates/backButton.php';
+
 $alunoId = $_GET['id'] ?? null;
 $tarefaId = $_GET['tarefaId'] ?? null;
 
@@ -133,6 +135,18 @@ if (!$alunoId) {
                         </div>
                     </div>
 
+                    <div class="row align-items-center mb-2">
+                        <div class="col-md-6">
+                            <span data-bs-toggle="tooltip"
+                                title="Observações do avaliador">
+                                <input type="text" class="form-control text-center" value="Observações" readonly>
+                            </span>
+                        </div>
+                        <div class="col-md-6">
+                            <textarea name="observacao" class="form-control text-center" rows="1" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"></textarea>
+                        </div>
+                    </div>
+
                     <!-- Botão -->
                     <div class="text-end">
                         <button type="submit" class="btn btn-dark">Salvar Avaliação</button>
@@ -145,9 +159,9 @@ if (!$alunoId) {
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-  // Ativar todos os tooltips
-  var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-  var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-    return new bootstrap.Tooltip(tooltipTriggerEl)
-  })
+    // Ativar todos os tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
 </script>

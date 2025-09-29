@@ -3,6 +3,8 @@ include_once("templates/header.php");
 include_once("config/dbconection.php");
 include_once("config/process.php");
 
+include 'templates/backButton.php';
+
 $reunioes = getReunioesAluno($conn);
 
 ?>
@@ -25,10 +27,6 @@ $reunioes = getReunioesAluno($conn);
                         <input type="text" name="assunto" class="form-control" required>
                     </div>
                     <div class="col-md-2">
-                        <label class="form-label">Rubrica Prof.</label>
-                        <input type="text" name="prof" class="form-control" placeholder="✔">
-                    </div>
-                    <div class="col-md-2">
                         <label class="form-label">Rubrica Aluno</label>
                         <input type="text" name="aluno" class="form-control" placeholder="✔">
                     </div>
@@ -47,6 +45,9 @@ $reunioes = getReunioesAluno($conn);
                             <th>Assunto Discutido</th>
                             <th>Rubrica do Prof.</th>
                             <th>Rubrica do Aluno</th>
+                            <?php if ($_SESSION['tipo'] === 'professor'): ?>
+                                <th>Aceitar Registro</th>
+                            <?php endif; ?>
                         </tr>
                     </thead>
                     <tbody>
@@ -61,7 +62,6 @@ $reunioes = getReunioesAluno($conn);
                     </tbody>
                 </table>
             </div>
-
         </div>
     </div>
 </div>

@@ -2,7 +2,7 @@
 
 session_start();
 
-    require_once 'config/url.php';
+require_once 'config/url.php';
 ?>
 
 <!DOCTYPE html>
@@ -29,4 +29,5 @@ session_start();
         </nav>
     </header>
 </body>
+
 </html>

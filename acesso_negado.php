@@ -1,10 +1,11 @@
 <?php
-    include_once("templates/header.php");
-    session_start();
+include_once("templates/header.php");
+session_start();
+
+include 'templates/backButton.php';
+
 ?>
 
 <div>
     <h1 class="text-center">Você não tem acesso a esta página!</h1>
 </div>
-
-

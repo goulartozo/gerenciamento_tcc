@@ -1,7 +1,7 @@
 <?php
 include_once("templates/header.php");
 
-
+include 'templates/backButton.php';
 ?>
 
 <div>
@@ -9,24 +9,24 @@ include_once("templates/header.php");
         <div class="card shadow-lg col-md-6 mx-auto">
             <div class="card-body">
                 <h3 class="text-center mb-4">Cadastro</h3>
-                
+
                 <form action="config/process.php" method="post" id="cadastroForm">
-                <input type="hidden" name="acao" value="cadastro_formulario_aluno_professor">
+                    <input type="hidden" name="acao" value="cadastro_formulario_aluno_professor">
 
-                <!-- Escolha -->
-                <div class="mb-3 text-center">
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="tipo" id="alunoRadio" value="aluno" checked>
-                        <label class="form-check-label" for="alunoRadio">Aluno</label>
+                    <!-- Escolha -->
+                    <div class="mb-3 text-center">
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="tipo" id="alunoRadio" value="aluno" checked>
+                            <label class="form-check-label" for="alunoRadio">Aluno</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="tipo" id="professorRadio" value="professor">
+                            <label class="form-check-label" for="professorRadio">Professor</label>
+                        </div>
                     </div>
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="tipo" id="professorRadio" value="professor">
-                        <label class="form-check-label" for="professorRadio">Professor</label>
-                    </div>
-                </div>
 
-                <!-- Formulário -->
-                
+                    <!-- Formulário -->
+
                     <!-- Campos do Aluno -->
                     <div id="formAluno">
                         <div class="mb-3">
@@ -94,25 +94,25 @@ include_once("templates/header.php");
 </div>
 
 <script>
-  const alunoRadio = document.getElementById("alunoRadio");
-  const professorRadio = document.getElementById("professorRadio");
-  const formAluno = document.getElementById("formAluno");
-  const formProfessor = document.getElementById("formProfessor");
+    const alunoRadio = document.getElementById("alunoRadio");
+    const professorRadio = document.getElementById("professorRadio");
+    const formAluno = document.getElementById("formAluno");
+    const formProfessor = document.getElementById("formProfessor");
 
-  function alternarFormulario() {
-    if (alunoRadio.checked) {
-      formAluno.style.display = "block";
-      formProfessor.style.display = "none";
-    } else if (professorRadio.checked) {
-      formAluno.style.display = "none";
-      formProfessor.style.display = "block";
+    function alternarFormulario() {
+        if (alunoRadio.checked) {
+            formAluno.style.display = "block";
+            formProfessor.style.display = "none";
+        } else if (professorRadio.checked) {
+            formAluno.style.display = "none";
+            formProfessor.style.display = "block";
+        }
     }
-  }
 
-  // dispara quando muda
-  alunoRadio.addEventListener("change", alternarFormulario);
-  professorRadio.addEventListener("change", alternarFormulario);
+    // dispara quando muda
+    alunoRadio.addEventListener("change", alternarFormulario);
+    professorRadio.addEventListener("change", alternarFormulario);
 
-  // força ajuste ao carregar a página
-  alternarFormulario();
+    // força ajuste ao carregar a página
+    alternarFormulario();
 </script>

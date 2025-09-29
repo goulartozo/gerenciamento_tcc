@@ -1,15 +1,15 @@
 <?php
-    include_once ("templates/header.php");
+include_once("templates/header.php");
 
-    if (!isset($_SESSION["usuario_id"])) {
-        header("Location: index.php");
-        exit;
-    }
+if (!isset($_SESSION["usuario_id"])) {
+  header("Location: index.php");
+  exit;
+}
 
-    if ($_SESSION['tipo'] !== 'aluno') {
-      header("Location: acesso_negado.php");
-      exit;
-    }
+if ($_SESSION['tipo'] !== 'aluno') {
+  header("Location: acesso_negado.php");
+  exit;
+}
 ?>
 
 <div class="row row-cols-1 row-cols-md-3 g-4">
@@ -27,11 +27,11 @@
   <div class="col">
     <div class="card">
       <a href="historico_reunioes.php">
-      <img src="./img/reunioes_img.jpg" class="card-img-top" alt="Reuniões">
-      <div class="card-body">
-        <h5 class="card-title">Reuniões</h5>
-        <p class="card-text">This is a longer card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
-      </div>
+        <img src="./img/reunioes_img.jpg" class="card-img-top" alt="Reuniões">
+        <div class="card-body">
+          <h5 class="card-title">Reuniões</h5>
+          <p class="card-text">This is a longer card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
+        </div>
       </a>
     </div>
   </div>
