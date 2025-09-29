@@ -124,6 +124,10 @@ if (!empty($data)) {
     if ($acao === "cadastro_formulario_aluno_professor") {
         cadastro_aluno_professor($conn, $data, $BASE_URL);
     }
+
+    if ($acao === "assinar_reuniao") {
+        assinar_reuniao($conn, $data, $BASE_URL);
+    }
 }
 
 function cadastro_aluno_professor($conn, $data, $BASE_URL)
@@ -320,22 +324,50 @@ function registrar_notas_avaliacao_proposta_tc($conn, $data, $BASE_URL, $alunoId
     exit;
 }
 
+function assinar_reuniao($conn, $data, $BASE_URL)
+{
+    if (!isset($_SESSION['usuario_id'])) {
+        header("Location: " . $BASE_URL . "/login.php");
+        exit;
+    }
+
+    $id_reuniao = $data['id_reuniao'];
+    $assinatura = "assinado";
+
+
+    try {
+        $sql = "UPDATE reunioes SET ass_prof = :assinatura WHERE id = :id_reuniao";
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(':assinatura', $assinatura);
+        $stmt->bindParam(':id_reuniao', $id_reuniao);
+        $stmt->execute();
+
+        header("Location: " . $BASE_URL . "/historico_reunioes.php?msg=assinatura_ok");
+        exit;
+    } catch (PDOException $e) {
+        header("Location: " . $BASE_URL . "/historico_reunioes.php?msg=erro_assinatura");
+        exit;
+    }
+}
+
+
+
+
 function registrar_reuniao($conn, $data, $BASE_URL)
 {
     $aluno_id = $_SESSION['usuario_id'];
     $datareuniao = $data['data'];
     $assunto = $data['assunto'];
-    $prof = $data['prof'] ?: '✔';
+    $prof = $data['prof'] ?: 'Pendente Confirmação';
     $aluno = $data['aluno'] ?: '✔';
 
-    $sql_prof = "SELECT professor_id FROM usuarios WHERE id = :aluno_id";
+    $sql_prof = "SELECT professor_id FROM aluno_professores WHERE aluno_id = :aluno_id and tipo = 'orientador';";
     $stmt = $conn->prepare($sql_prof);
     $stmt->bindParam(':aluno_id', $aluno_id);
     $stmt->execute();
     $professor = $stmt->fetch(PDO::FETCH_ASSOC);
     $professor_id = $professor['professor_id'];
 
-    // Adicione prof e aluno ao SQL se existirem na tabela
     $sql = "INSERT INTO reunioes(aluno_id, professor_id, data, assunto, ass_prof, ass_aluno)
         VALUES (:aluno_id, :professor_id, :datareuniao, :assunto, :prof, :aluno);";
 
@@ -358,19 +390,40 @@ function registrar_reuniao($conn, $data, $BASE_URL)
 
 function getReunioesAluno($conn)
 {
-    $aluno_id = $_SESSION['usuario_id'] ?? null;
-    if (!$aluno_id) return [];
+    $usuario_id = $_SESSION['usuario_id'] ?? null;
+    $tipo = $_SESSION['tipo'] ?? null;
+
+    if (!$usuario_id || !$tipo) {
+        return [];
+    }
 
     try {
-        $sql = "SELECT data, assunto, ass_prof, ass_aluno FROM reunioes WHERE aluno_id = :aluno_id ORDER BY data DESC";
+        if ($tipo === 'aluno') {
+            $sql = "SELECT id, data, assunto, ass_prof, ass_aluno 
+                    FROM reunioes 
+                    WHERE aluno_id = :usuario_id 
+                    ORDER BY data DESC";
+        } else if ($tipo === 'professor') {
+            $sql = "SELECT id, data, assunto, ass_prof, ass_aluno 
+                    FROM reunioes 
+                    WHERE professor_id = :usuario_id 
+                    ORDER BY data DESC";
+        } else {
+            return [];
+        }
+
         $stmt = $conn->prepare($sql);
-        $stmt->bindParam(':aluno_id', $aluno_id);
+        $stmt->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);
         $stmt->execute();
+
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (PDOException $e) {
         return [];
     }
 }
+
+
+
 
 function getAlunos($conn)
 {

@@ -5,7 +5,12 @@ include_once("config/process.php");
 
 include 'templates/backButton.php';
 
-$reunioes = getReunioesAluno($conn);
+if ($_SESSION['tipo'] === 'aluno') {
+    $reunioes = getReunioesAluno($conn);
+} else {
+    $reunioes = getReunioesAluno($conn);
+}
+
 
 ?>
 
@@ -57,8 +62,25 @@ $reunioes = getReunioesAluno($conn);
                                 <td><?= $reuniao["assunto"] ?></td>
                                 <td><?= $reuniao["ass_prof"] ?></td>
                                 <td><?= $reuniao["ass_aluno"] ?></td>
+
+                                <?php if ($_SESSION['tipo'] === 'professor'): ?>
+                                    <td>
+                                        <?php if ($reuniao['ass_prof'] === 'Pendente Confirmação'): ?>
+                                            <form action="config/process.php" method="post" class="d-inline">
+                                                <input type="hidden" name="acao" value="assinar_reuniao">
+                                                <input type="hidden" name="id_reuniao" value="<?= $reuniao['id'] ?>">
+                                                <button type="submit" class="btn btn-sm btn-success">
+                                                    Assinar
+                                                </button>
+                                            </form>
+                                        <?php else: ?>
+                                            <span class="text-success">Assinado</span>
+                                        <?php endif; ?>
+                                    </td>
+                                <?php endif; ?>
                             </tr>
                         <?php endforeach; ?>
+
                     </tbody>
                 </table>
             </div>
