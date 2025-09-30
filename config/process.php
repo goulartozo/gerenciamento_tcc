@@ -271,13 +271,13 @@ function registrar_notas_avaliacao_proposta_tc($conn, $data, $BASE_URL, $alunoId
     }
 
     $sql = "INSERT INTO avaliacoes_proposta (
-        aluno_id, professor_id, tarefa_id,
-        introducao, objetivos, rev_biblio1, rev_biblio2,
-        orientacao1, orientacao2, resumo, data_avaliacao, observacoes
+    aluno_id, professor_id, tarefa_id,
+    introducao, objetivos, rev_biblio1, rev_biblio2,
+    orientacao1, orientacao2, resumo, data_avaliacao, observacoes
     ) VALUES (
         :aluno_id, :professor_id, :tarefa_id,
         :introducao, :objetivos, :rev_biblio1, :rev_biblio2,
-        :orientacao1, :orientacao2, :resumo, NOW(),  :observacao 
+        :orientacao1, :orientacao2, :resumo, NOW(), :observacao 
     )";
     try {
         $stmt = $conn->prepare($sql);
@@ -300,8 +300,10 @@ function registrar_notas_avaliacao_proposta_tc($conn, $data, $BASE_URL, $alunoId
         exit;
     }
 
-    // Após inserir, verifica se já existem 3 avaliações para este aluno/tarefa
-    $countSql = "SELECT AVG(nota) as media, COUNT(*) as total FROM avaliacoes_proposta WHERE aluno_id = :aluno_id AND tarefa_id = :tarefa_id";
+    //Após inserir, verifica se já existem 3 avaliações para este aluno/tarefa
+    $countSql = "SELECT AVG(nota) as media, COUNT(*) as total
+             FROM avaliacoes_proposta
+             WHERE aluno_id = :aluno_id AND tarefa_id = :tarefa_id";
     $countStmt = $conn->prepare($countSql);
     $countStmt->bindParam(':aluno_id', $alunoId);
     $countStmt->bindParam(':tarefa_id', $tarefaId);
@@ -311,7 +313,9 @@ function registrar_notas_avaliacao_proposta_tc($conn, $data, $BASE_URL, $alunoId
     if ($result['total'] == 3) {
         // Atualiza a entrega com a média final
         $media = round($result['media'], 2);
-        $updateSql = "UPDATE entregas SET status = 'avaliado', nota = :media WHERE aluno_id = :aluno_id AND tarefa_id = :tarefa_id";
+        $updateSql = "UPDATE entregas
+                  SET status = 'avaliado', nota = :media
+                  WHERE aluno_id = :aluno_id AND tarefa_id = :tarefa_id";
         $updateStmt = $conn->prepare($updateSql);
         $updateStmt->bindParam(':media', $media);
         $updateStmt->bindParam(':aluno_id', $alunoId);
